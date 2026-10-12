@@ -1,0 +1,59 @@
+curl -X POST http://localhost:3000/api/agent/chat \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sessionId": "user-002",
+    "message": "我家宝宝出生日期是2025-06-15，最近晚上总是睡不好怎么办？"
+  }'
+
+###
+curl -X POST http://localhost:3000/api/agent/chat \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sessionId": "user-002",
+    "message": "那她这个月龄应该会哪些技能了？"
+  }'
+
+###
+curl -X POST http://localhost:3000/api/agent/chat \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sessionId": "user-002",
+    "message": "宝宝有点发烧38.2度，精神还可以，要去医院吗？"
+  }'
+
+###
+curl -X POST http://localhost:3000/api/agent/chat \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sessionId": "user-002",
+    "message": "总是喜欢翻身，屁股拱起来，想爬行吗？"
+  }'
+
+### 流式输出（SSE）：-N 关闭 curl 缓冲，逐 token 打印 data 行
+curl -N -X POST http://localhost:3000/api/agent/chat \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sessionId": "user-002",
+    "message": "该不该给宝宝用安抚奶嘴？",
+    "stream": true
+  }'
+
+
+### 流式 + 只看拼接后的文本（需要 python3）
+curl -sN -X POST http://localhost:3000/api/agent/chat \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sessionId": "user-002",
+    "message": "那多大要戒掉？",
+    "stream": true
+  }' | python3 -u -c '
+import sys, json
+for line in sys.stdin:
+    line = line.strip()
+    if line.startswith("data: "):
+        event = json.loads(line[6:])
+        if "delta" in event:
+            print(event["delta"], end="", flush=True)
+        elif event.get("done"):
+            print()
+'
