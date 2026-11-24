@@ -17,7 +17,7 @@ hero:
       link: /guide/introduction
     - theme: alt
       text: GitHub
-      link: https://github.com/
+      link: https://github.com/BenTuTu/parenting-agent
 
 features:
   - icon: 🍼

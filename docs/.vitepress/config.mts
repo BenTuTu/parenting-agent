@@ -1,16 +1,20 @@
 import { defineConfig } from 'vitepress'
 
-// TODO: 仓库地址确定后替换这里，导航栏与首页按钮会同步生效
-export const GITHUB_URL = 'https://github.com/'
+export const GITHUB_URL = 'https://github.com/BenTuTu/parenting-agent'
+
+// GitHub Pages 项目站点部署在 https://<用户名>.github.io/<仓库名>/ 下，
+// 所以 base 必须是 '/<仓库名>/'。若改用自定义域名或 <用户名>.github.io 仓库，改回 '/'。
+const BASE = '/parenting-agent/'
 
 export default defineConfig({
+  base: BASE,
   lang: 'zh-CN',
   title: '小芽育儿助手',
   description: '陪伴 0-8 岁宝宝成长的 AI 育儿科普伙伴 · Parenting Agent',
   cleanUrls: true,
   lastUpdated: true,
   head: [
-    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }],
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: `${BASE}logo.svg` }],
     ['meta', { name: 'theme-color', content: '#f4a582' }],
   ],
 

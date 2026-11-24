@@ -11,7 +11,7 @@
 ## 2. 安装依赖
 
 ```bash
-git clone <仓库地址> parenting-agent
+git clone https://github.com/BenTuTu/parenting-agent.git
 cd parenting-agent
 pnpm install
 ```

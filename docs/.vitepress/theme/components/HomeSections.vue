@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { withBase } from 'vitepress'
+
 const stages = [
   { emoji: '👶', age: '0-3 月', text: '吃奶、睡觉、第一次抬头' },
   { emoji: '🙂', age: '4-6 月', text: '翻身、咯咯笑、尝试辅食' },
@@ -72,7 +74,7 @@ const promises = [
     <section class="cta">
       <h2>准备好了吗？三分钟把小芽请回家 🏡</h2>
       <p>只需 Node.js、pnpm 和一个 OpenAI 兼容的模型接口。</p>
-      <a class="cta-btn" href="./guide/getting-started">查看快速开始</a>
+      <a class="cta-btn" :href="withBase('/guide/getting-started')">查看快速开始</a>
     </section>
   </div>
 </template>
