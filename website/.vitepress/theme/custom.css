@@ -1,0 +1,88 @@
+/* 小芽育儿助手 —— 温暖的奶油、蜜桃、嫩芽绿 */
+:root {
+  --sprout-peach: #f4a582;
+  --sprout-peach-deep: #e8875f;
+  --sprout-green: #7bb77f;
+  --sprout-cream: #fffaf4;
+  --sprout-pink: #fbd9d3;
+
+  --vp-c-brand-1: #e07a52;
+  --vp-c-brand-2: #ea8f69;
+  --vp-c-brand-3: #f4a582;
+  --vp-c-brand-soft: rgba(244, 165, 130, 0.16);
+
+  --vp-c-bg: #fffaf4;
+  --vp-c-bg-alt: #fdf3ea;
+  --vp-c-bg-elv: #ffffff;
+  --vp-c-bg-soft: #fbeee3;
+
+  --vp-font-family-base: 'PingFang SC', 'Hiragino Sans GB', 'Nunito', 'Microsoft YaHei',
+    -apple-system, BlinkMacSystemFont, sans-serif;
+
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: linear-gradient(120deg, #e8875f 20%, #7bb77f 90%);
+  --vp-home-hero-image-background-image: radial-gradient(circle, #fbd9d3 30%, #dff0d8 70%);
+  --vp-home-hero-image-filter: blur(56px);
+
+  --vp-button-brand-bg: var(--vp-c-brand-1);
+  --vp-button-brand-hover-bg: var(--vp-c-brand-2);
+  --vp-button-brand-active-bg: var(--vp-c-brand-1);
+}
+
+.dark {
+  --vp-c-brand-1: #f6b394;
+  --vp-c-brand-2: #f4a582;
+  --vp-c-brand-3: #e8875f;
+  --vp-c-bg: #1f1a17;
+  --vp-c-bg-alt: #191512;
+  --vp-c-bg-elv: #27211d;
+  --vp-c-bg-soft: #2b2420;
+  --vp-button-brand-text: #2b1a12;
+}
+
+/* 圆润一点，更像儿童绘本 */
+.VPButton {
+  border-radius: 999px !important;
+}
+.VPFeature {
+  border-radius: 20px !important;
+  border: 1px solid rgba(244, 165, 130, 0.25) !important;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.VPFeature:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px -12px rgba(232, 135, 95, 0.35);
+}
+.VPFeature .icon {
+  background-color: var(--sprout-pink) !important;
+  border-radius: 14px !important;
+}
+.dark .VPFeature .icon {
+  background-color: #3a2c25 !important;
+}
+
+/* 首页背景：淡淡的云朵与圆点 */
+.VPHome {
+  background:
+    radial-gradient(circle at 8% 12%, rgba(251, 217, 211, 0.55) 0, transparent 28%),
+    radial-gradient(circle at 92% 30%, rgba(223, 240, 216, 0.6) 0, transparent 26%),
+    radial-gradient(circle at 50% 100%, rgba(253, 231, 220, 0.6) 0, transparent 40%);
+}
+.dark .VPHome {
+  background: none;
+}
+
+.VPHero .image-src {
+  animation: sprout-float 4.5s ease-in-out infinite;
+}
+@keyframes sprout-float {
+  0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+  50% { transform: translate(-50%, -50%) translateY(-10px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .VPHero .image-src { animation: none; }
+}
+
+.vp-doc .custom-block {
+  border-radius: 14px;
+}
