@@ -1,31 +1,28 @@
-# 构建 docs/（VitePress）并部署到 GitHub Pages
-# 首次使用：仓库 Settings → Pages → Build and deployment → Source 选择 "GitHub Actions"
+# 构建 docs/（VitePress），把产物推送到 gh-pages 分支
+# Pages 设置：Settings → Pages → Source: Deploy from a branch → Branch: gh-pages / (root)
 name: Deploy Docs
 
 on:
   push:
-    branches: [main]
+    branches: [main, docs]
     paths:
       - 'docs/**'
       - '.github/workflows/deploy-docs.yml'
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write # 需要推送 gh-pages 分支
 
 concurrency:
-  group: pages
-  cancel-in-progress: false
-
-defaults:
-  run:
-    working-directory: docs
+  group: gh-pages
+  cancel-in-progress: true
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: docs
     steps:
       - uses: actions/checkout@v4
         with:
@@ -41,22 +38,15 @@ jobs:
           cache: pnpm
           cache-dependency-path: docs/pnpm-lock.yaml
 
-      - uses: actions/configure-pages@v5
-
       - run: pnpm install --frozen-lockfile
 
       - run: pnpm build
 
-      - uses: actions/upload-pages-artifact@v3
+      - name: Push to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          path: docs/.vitepress/dist
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: docs/.vitepress/dist
+          publish_branch: gh-pages
+          force_orphan: true # gh-pages 只保留最新一次构建
+          commit_message: 'docs: deploy'
