@@ -1,0 +1,74 @@
+/* 小芽育儿助手 —— 温暖的奶油、蜜桃、嫩芽绿。变量见 https://rspress.rs/ui/vars */
+:root {
+  --sprout-peach: #f4a582;
+  --sprout-green: #7bb77f;
+  --sprout-pink: #fbd9d3;
+
+  --rp-c-brand: #e07a52;
+  --rp-c-brand-dark: #c9653f;
+  --rp-c-brand-darker: #b0552f;
+  --rp-c-brand-light: #ea8f69;
+  --rp-c-brand-lighter: #f4a582;
+  --rp-c-brand-tint: rgba(244, 165, 130, 0.16);
+
+  --rp-home-hero-secondary-color: #7bb77f;
+  --rp-home-hero-title-bg: linear-gradient(120deg, #e8875f 20%, #7bb77f 90%);
+}
+
+html:not(.dark) {
+  --rp-c-bg: #fffaf4;
+  --rp-c-bg-soft: #fbeee3;
+  --rp-c-bg-mute: #f7e6d8;
+  --rp-home-background-bg:
+    radial-gradient(60% 50% at 8% 6%, rgba(251, 217, 211, 0.7) 0%, rgba(255, 250, 244, 0) 70%),
+    radial-gradient(50% 45% at 95% 20%, rgba(223, 240, 216, 0.8) 0%, rgba(255, 250, 244, 0) 70%),
+    radial-gradient(80% 40% at 50% 100%, rgba(253, 231, 220, 0.6) 0%, rgba(255, 250, 244, 0) 60%),
+    #fffaf4;
+}
+
+html.dark {
+  --rp-c-brand: #f6b394;
+  --rp-c-brand-dark: #f4a582;
+  --rp-c-brand-light: #f8c4ab;
+  --rp-home-background-bg:
+    radial-gradient(60% 50% at 10% 0%, rgba(232, 135, 95, 0.25) 0%, rgba(18, 18, 18, 0) 70%),
+    radial-gradient(50% 50% at 95% 15%, rgba(123, 183, 127, 0.2) 0%, rgba(18, 18, 18, 0) 70%);
+}
+
+body {
+  font-family: 'PingFang SC', 'Hiragino Sans GB', 'Nunito', 'Microsoft YaHei', -apple-system,
+    BlinkMacSystemFont, sans-serif;
+}
+
+/* 圆润一点，更像儿童绘本 */
+.rp-home-hero__action a,
+.rp-home-hero__action button {
+  border-radius: 999px !important;
+}
+.rp-home-feature__card {
+  border-radius: 20px !important;
+  border: 1px solid rgba(244, 165, 130, 0.28) !important;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.rp-home-feature__card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px -12px rgba(232, 135, 95, 0.35);
+}
+.rp-home-feature__icon {
+  background-color: var(--sprout-pink);
+  border-radius: 14px;
+}
+html.dark .rp-home-feature__icon {
+  background-color: #3a2c25;
+}
+
+.rp-home-hero__image-img {
+  animation: sprout-float 4.5s ease-in-out infinite;
+}
+@keyframes sprout-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rp-home-hero__image-img { animation: none; }
+}

@@ -1,4 +1,4 @@
-# 构建 docs/（VitePress），把产物推送到 gh-pages 分支
+# 构建 docs/（Rspress），把产物推送到 gh-pages 分支
 # Pages 设置：Settings → Pages → Source: Deploy from a branch → Branch: gh-pages / (root)
 name: Deploy Docs
 
@@ -46,7 +46,7 @@ jobs:
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: docs/.vitepress/dist
+          publish_dir: docs/doc_build
           publish_branch: gh-pages
           force_orphan: true # gh-pages 只保留最新一次构建
           commit_message: 'docs: deploy'

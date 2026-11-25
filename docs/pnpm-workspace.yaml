@@ -1,2 +1,1 @@
-allowBuilds:
-  esbuild: true
+# docs/ 是独立的 pnpm 根，避免与根目录 agent 项目共享依赖

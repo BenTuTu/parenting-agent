@@ -19,6 +19,31 @@ import {
 const app = express();
 app.use(express.json());
 
+// 跨域白名单（逗号分隔），例如 CORS_ORIGINS=https://bentutu.github.io
+// 未配置时不发送 CORS 头：本地文档站经 Vite 代理同源访问，不需要跨域。
+const corsOrigins = (process.env.CORS_ORIGINS ?? "")
+  .split(",")
+  .concat(["https://bentutu.github.io"])
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin && (corsOrigins.includes("*") || corsOrigins.includes(origin))) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Vary", "Origin");
+    res.setHeader("Access-Control-Allow-Methods", "POST, DELETE, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    // https 页面访问 localhost 等私有网络地址时，Chrome 的预检要求此头
+    res.setHeader("Access-Control-Allow-Private-Network", "true");
+  }
+  if (req.method === "OPTIONS") {
+    res.sendStatus(204);
+    return;
+  }
+  next();
+});
+
 app.post("/api/agent/chat", async (req, res) => {
   const { sessionId, message, stream, verbose } = req.body ?? {};
   if (typeof sessionId !== "string" || typeof message !== "string") {

@@ -1,5 +1,5 @@
 ---
-layout: home
+pageType: home
 
 hero:
   name: 小芽育儿助手
@@ -13,8 +13,8 @@ hero:
       text: 开始使用 →
       link: /guide/getting-started
     - theme: alt
-      text: 了解小芽
-      link: /guide/introduction
+      text: 在线试一试
+      link: /playground
     - theme: alt
       text: GitHub
       link: https://github.com/BenTuTu/parenting-agent
@@ -39,5 +39,3 @@ features:
     title: 会追问，也会记得
     details: 信息不够时会像朋友一样轻声问一句"宝宝现在多大啦？"；多轮对话自动记住宝宝的情况。
 ---
-
-<HomeSections />

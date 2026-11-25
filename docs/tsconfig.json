@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "lib": ["DOM", "DOM.Iterable", "ES2023"],
+    "jsx": "react-jsx",
+    "target": "ES2023",
+    "noEmit": true,
+    "skipLibCheck": true,
+    "module": "ESNext",
+    "moduleDetection": "force",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "types": ["node"]
+  },
+  "include": ["content", "theme", "rspress.config.ts"],
+  "mdx": {
+    "checkMdx": true
+  }
+}
