@@ -1,0 +1,525 @@
+---
+url: /parenting-agent/guide/introduction.md
+---
+
+> For AI agents: the complete documentation index is available at /parenting-agent/llms.txt, the full documentation bundle is available at /parenting-agent/llms-full.txt.
+
+# 项目介绍
+
+**小芽育儿助手**（Parenting Agent）是一个面向 0-8 岁宝宝家长的育儿知识科普与咨询 Agent。它基于 [`@openai/agents`](https://github.com/openai/openai-agents-js) SDK 构建，可接入任意 OpenAI 兼容的模型服务。
+
+> 写给每一位第一次当爸爸妈妈的你：育儿路上没有标准答案，但可以有靠谱的参考。🌱
+
+## 它能帮你做什么
+
+| 场景                 | 小芽会怎么做                           |
+| ------------------ | -------------------------------- |
+| "宝宝 10 个月了，应该会什么？" | 按月龄查询发育里程碑（大运动 / 精细动作 / 语言 / 社交） |
+| "孩子晚上总醒怎么办？"       | 匹配对应月龄的睡眠护理指南，给出可执行的建议           |
+| "多大可以开始刷牙？"        | 检索本地精选 Wiki，读取全文后作答并注明来源         |
+| "3 个月宝宝发烧 38.5℃"   | 识别为**红旗信号**，第一时间建议立即就医           |
+
+## 核心原则
+
+:::tip 有据可查
+事实性知识**必须**来自工具返回的精选数据，模型不得编造。两层数据都查不到时，会明确告诉你"暂无精选数据"。
+:::
+
+:::warning 不做医学诊断
+小芽只提供育儿科普与日常护理建议，回答末尾会附带免责声明。涉及健康问题，请以专业医生意见为准。
+:::
+
+:::danger 红旗信号优先
+3 月龄内发烧、抽搐、呼吸困难等危险信号，优先级高于一切回答模板——直接建议就医。
+:::
+
+## 架构一览
+
+```
+          入口层：chat.tsx（终端聊天） · cli.ts（命令行） · server.ts（HTTP API）
+                                    │
+                         agent.ts  Parenting Advisor
+                  红旗分诊 · 不做诊断 · 五段输出模板 · 免责声明
+                                    │ 工具（确定性纯函数）
+  ┌───────────────┬───────────────┬──────────────┬─────────────┬────────────────┬───────────────────┐
+  calc_age_stage  get_milestones  get_care_guide  search_wiki  read_wiki_page  ask_user_question
+  出生日期→月龄     月龄→里程碑      主题→护理指南    关键词检索    slug→全文        向家长追问
+```
+
+会话通过 JSONL 文件持久化在 `.sessions/` 目录，重启后自动恢复上下文。
+
+下一步：[快速开始 →](/parenting-agent/guide/getting-started.md)
+
+
+
+---
+url: /parenting-agent/guide/getting-started.md
+---
+
+> For AI agents: the complete documentation index is available at /parenting-agent/llms.txt, the full documentation bundle is available at /parenting-agent/llms-full.txt.
+
+# 快速开始
+
+只要三步，就能和小芽聊上天 🍼
+
+## 1. 准备环境
+
+- [Node.js](https://nodejs.org/) 20 及以上
+- [pnpm](https://pnpm.io/)
+- 一个 OpenAI 兼容的模型接口（官方 API 或兼容代理均可）
+
+## 2. 安装依赖
+
+```bash
+git clone https://github.com/BenTuTu/parenting-agent.git
+cd parenting-agent
+pnpm install
+```
+
+## 3. 配置模型
+
+复制示例配置并填写(以 DeepSeek 为例)：
+
+```bash
+cp .env.example .env
+```
+
+```ini
+OPENAI_API_KEY=sk-...
+OPENAI_BASE_URL=https://api.deepseek.com
+MODEL_NAME=deepseek-flash
+PORT=3000
+```
+
+详细说明见 [环境配置](/parenting-agent/guide/configuration.md)。
+
+## 4. 开始聊天
+
+```bash
+# 交互式终端聊天（推荐）
+pnpm chat
+
+# 单次提问（流式输出）
+pnpm cli "宝宝8个月，长了两颗牙，多大可以开始刷牙？"
+
+# 启动 HTTP 服务
+pnpm dev
+```
+
+:::tip 小提示
+第一次聊天时，可以先告诉小芽宝宝的出生日期，例如"我家女儿出生日期是 2025-01-10"，后续的回答都会自动对准宝宝的月龄。
+:::
+
+## 自检
+
+```bash
+pnpm smoke "10个月宝宝应该会什么？"   # 冒烟测试（真实调用模型）
+npx tsx test/wiki-test.ts             # wiki 工具单测（不依赖模型）
+```
+
+## 在网页上聊天（Playground）
+
+官网自带一个 [Playground](/parenting-agent/playground.md) 页面，直接调用服务端的 `POST /api/agent/chat`（SSE 流式）。本地调试：
+
+```bash
+# 终端 1：项目根目录启动 agent 服务（默认 3000 端口）
+pnpm dev
+
+# 终端 2：启动文档站
+cd docs && pnpm install && pnpm dev
+```
+
+打开 [http://localhost:5173/parenting-agent/playground](http://localhost:5173/parenting-agent/playground) 即可提问（文档站固定使用 5173 端口，避免与 agent 服务的 3000 冲突）。开发服务器会把 `/api` 代理到 `http://localhost:3000`，不需要处理跨域；服务端口不同时，可以用 `API_PROXY_TARGET=http://localhost:4000 pnpm dev` 修改代理目标。
+
+:::tip 部署后的线上 Playground
+GitHub Pages 只托管静态页面，线上使用需要一个公网可访问的 agent 服务：
+
+1. 服务端设置跨域白名单：`CORS_ORIGINS=https://bentutu.github.io pnpm dev`
+2. 在 Playground 的「⚙️ 设置」里填写服务地址；也可以在构建时用 `API_BASE=https://your-api.example.com pnpm build` 写入默认值
+   :::
+
+
+
+---
+url: /parenting-agent/guide/configuration.md
+---
+
+> For AI agents: the complete documentation index is available at /parenting-agent/llms.txt, the full documentation bundle is available at /parenting-agent/llms-full.txt.
+
+# 环境配置
+
+所有配置通过项目根目录的 `.env` 文件读取（`.env` 已被 git 忽略，请勿提交密钥）。
+
+| 变量                | 必填 | 说明                  | 示例                                  |
+| ----------------- | -- | ------------------- | ----------------------------------- |
+| `OPENAI_API_KEY`  | ✅  | 模型服务的 API Key       | `sk-...`                            |
+| `OPENAI_BASE_URL` | ✅  | OpenAI 兼容接口地址       | `https://your-proxy.example.com/v1` |
+| `MODEL_NAME`      | ✅  | 使用的模型名称             | `gpt-5.6-sol`                       |
+| `PORT`            |    | HTTP 服务端口，默认 `3000` | `3000`                              |
+
+## 关于兼容代理
+
+项目内部做了两件事，以便顺畅接入兼容代理：
+
+- `setOpenAIAPI("chat_completions")`：使用 Chat Completions 协议，兼容性最好
+- `setTracingDisabled(true)`：关闭向 OpenAI 官方上传 trace（使用代理 Key 时会 401）
+
+## 流程日志
+
+运行时会输出 Agent / 工具的生命周期日志，便于排查。交互式聊天 `pnpm chat` 默认以 `FLOW_LOG=off` 关闭日志，保持界面清爽。
+
+
+
+---
+url: /parenting-agent/guide/chat.md
+---
+
+> For AI agents: the complete documentation index is available at /parenting-agent/llms.txt, the full documentation bundle is available at /parenting-agent/llms-full.txt.
+
+# 交互式聊天
+
+`pnpm chat` 会打开一个基于 [Ink](https://github.com/vadimdemedes/ink) 的终端聊天界面，适合日常使用。
+
+```bash
+pnpm chat
+pnpm chat --session baby-mia     # 指定会话 ID，记住宝宝的情况
+pnpm chat --show-tools           # 显示工具调用过程
+```
+
+## 斜杠命令
+
+| 命令       | 说明     |
+| -------- | ------ |
+| `/clear` | 清空当前会话 |
+| `/exit`  | 退出聊天   |
+
+输入 `/` 会弹出命令提示，用 <kbd>↑</kbd> <kbd>↓</kbd> 选择，<kbd>Tab</kbd> 补全，<kbd>Esc</kbd> 关闭。
+
+## 小芽的追问
+
+当缺少关键信息（比如月龄、症状细节）时，小芽会先向你提一个问题，并给出可选项：
+
+```
+宝宝现在多大啦？
+  ❯ 0-3个月
+    4-6个月
+    7-12个月
+    1岁以上
+```
+
+用方向键选择后回车即可；答案无法枚举时（比如出生日期），会直接让你自由输入。
+
+
+
+---
+url: /parenting-agent/guide/cli.md
+---
+
+> For AI agents: the complete documentation index is available at /parenting-agent/llms.txt, the full documentation bundle is available at /parenting-agent/llms-full.txt.
+
+# 命令行
+
+适合快速提一个问题，或在脚本中调用。回答以流式方式输出。
+
+```bash
+pnpm cli "宝宝发烧38.2度怎么办？"
+```
+
+## 带会话记忆
+
+使用 `--session <id>` 让多次提问共享上下文：
+
+```bash
+pnpm cli --session demo "我家女儿出生日期是2025-01-10"
+pnpm cli --session demo "她现在应该会说话了吗？"
+```
+
+第二个问题中，小芽会记得宝宝的出生日期并自动换算月龄。未指定时默认会话 ID 为 `cli`。
+
+:::info 会话存在哪里？
+每个会话保存为 `.sessions/<id>.jsonl`，每行一条消息，增量追加。删掉对应文件即可清空记忆。
+:::
+
+
+
+---
+url: /parenting-agent/guide/http-api.md
+---
+
+> For AI agents: the complete documentation index is available at /parenting-agent/llms.txt, the full documentation bundle is available at /parenting-agent/llms-full.txt.
+
+# HTTP API
+
+启动服务：
+
+```bash
+pnpm dev   # 默认监听 http://localhost:3000
+```
+
+## 发送消息
+
+`POST /api/agent/chat`
+
+| 字段          | 类型      | 必填 | 说明                 |
+| ----------- | ------- | -- | ------------------ |
+| `sessionId` | string  | ✅  | 会话 ID，同一 ID 共享上下文  |
+| `message`   | string  | ✅  | 家长的问题              |
+| `stream`    | boolean |    | `true` 时以 SSE 流式返回 |
+| `verbose`   | boolean |    | 流式模式下额外推送工具调用事件    |
+
+### 非流式
+
+```bash
+curl -X POST localhost:3000/api/agent/chat \
+  -H "Content-Type: application/json" \
+  -d '{"sessionId":"u1","message":"宝宝发烧38.2度怎么办？"}'
+```
+
+```json
+{ "sessionId": "u1", "reply": "……" }
+```
+
+### 流式（SSE）
+
+```bash
+curl -N -X POST localhost:3000/api/agent/chat \
+  -H "Content-Type: application/json" \
+  -d '{"sessionId":"u1","message":"该不该用安抚奶嘴？","stream":true}'
+```
+
+事件格式：
+
+```text
+data: {"delta":"安抚奶嘴"}                       // 增量文本
+data: {"tool":{"phase":"start","name":"search_wiki",...}}  // verbose=true 时
+data: {"done":true,"sessionId":"u1"}             // 结束
+```
+
+## 清除会话
+
+`DELETE /api/agent/chat/:sessionId`
+
+```bash
+curl -X DELETE localhost:3000/api/agent/chat/u1
+# { "ok": true }
+```
+
+## 错误
+
+| 状态码   | 说明                                 |
+| ----- | ---------------------------------- |
+| `400` | `sessionId` 或 `message` 缺失 / 不是字符串 |
+| `500` | Agent 运行失败                         |
+
+更多用例见仓库中的 `test/api.http`。
+
+
+
+---
+url: /parenting-agent/guide/tools.md
+---
+
+> For AI agents: the complete documentation index is available at /parenting-agent/llms.txt, the full documentation bundle is available at /parenting-agent/llms-full.txt.
+
+# 工具与知识来源
+
+小芽的所有事实性知识都来自**确定性工具**——相同输入永远得到相同输出，不联网、可单测。
+
+## 工具清单
+
+| 工具                  | 作用             | 数据来源                      |
+| ------------------- | -------------- | ------------------------- |
+| `calc_age_stage`    | 出生日期 → 月龄 / 阶段 | 计算                        |
+| `get_milestones`    | 月龄 → 发育里程碑     | `src/data/milestones.ts`  |
+| `get_care_guide`    | 主题 + 月龄 → 护理指南 | `src/data/care-guides.ts` |
+| `search_wiki`       | 关键词 → 相关文章目录   | `src/data/wiki/*.md`      |
+| `read_wiki_page`    | slug → 文章全文    | `src/data/wiki/*.md`      |
+| `ask_user_question` | 向家长追问缺失信息      | 交互                        |
+
+## 发育里程碑
+
+覆盖 0-96 个月，划分为 10 个**不重叠、连续**的闭区间：
+
+`0-3` · `4-6` · `7-9` · `10-12` · `13-18` · `19-24` · `25-36` · `37-48` · `49-72` · `73-96` 月
+
+每个区间包含 **大运动、精细动作、语言、社交情绪** 四个维度，以及该阶段的红旗信号。
+
+## 护理指南主题
+
+| 主题 key                 | 内容       |
+| ---------------------- | -------- |
+| `sleep`                | 睡眠 🌙    |
+| `feeding`              | 喂养 🍼    |
+| `fever-care`           | 发烧护理 🌡️ |
+| `toilet-training`      | 如厕训练 🚽  |
+| `kindergarten-anxiety` | 入园焦虑 🎒  |
+| `screen-time`          | 屏幕时间 📱  |
+
+## Agent 决策顺序
+
+1. **红旗信号** → 立即建议就医，跳过一切模板
+2. 已知出生日期 / 月龄 → `calc_age_stage` 锚定月龄
+3. 发育类问题 → `get_milestones`；六大主题 → `get_care_guide`
+4. 结构化数据未覆盖 → `search_wiki` → 命中后 `read_wiki_page` 读全文作答（注明来源）
+5. 都没命中 → 明确声明"暂无精选数据"
+
+:::tip 两段式检索
+`search_wiki` 只返回 slug、标题、摘要；模型选定后才用 `read_wiki_page` 读取全文，从而控制每次注入上下文的体积。
+:::
+
+
+
+---
+url: /parenting-agent/guide/wiki.md
+---
+
+> For AI agents: the complete documentation index is available at /parenting-agent/llms.txt, the full documentation bundle is available at /parenting-agent/llms-full.txt.
+
+# 扩充 Wiki 知识
+
+想让小芽懂得更多？在 `src/data/wiki/` 下新建一个 Markdown 文件即可，**重启进程后生效**。
+
+## 文件模板
+
+```markdown
+---
+slug: your-topic
+title: 文档标题
+summary: 一句话摘要。
+topics: 关键词1, 同义词2, 同义词3
+minMonth: 0
+maxMonth: 96
+---
+
+## 正文章节...
+
+## 何时就医
+（涉及健康安全的主题必须包含此章节）
+```
+
+## Frontmatter 字段
+
+| 字段                      | 说明                            |
+| ----------------------- | ----------------------------- |
+| `slug`                  | 唯一标识，`read_wiki_page` 按它读取全文  |
+| `title`                 | 标题，会出现在回答的来源标注中               |
+| `summary`               | 一句话摘要，`search_wiki` 返回给模型用于挑选 |
+| `topics`                | 逗号分隔的关键词 / 同义词，决定能否被检索命中      |
+| `minMonth` / `maxMonth` | 适用月龄闭区间                       |
+
+## 写作建议
+
+- 📌 **同义词要给足**：家长会说"蛀牙"也会说"龋齿"，都写进 `topics`
+- 🩺 **健康类主题必须有「何时就医」章节**
+- 📚 内容请参考权威指南（如卫健委、AAP、WHO），并保持通俗易懂
+- ✅ 写完运行 `npx tsx test/wiki-test.ts` 检查解析是否正常
+
+当前已收录 0-12 月逐月指南、语言爆发期、安抚奶嘴、幼儿急疹、分离焦虑睡眠、刷牙、4-12 月玩具等主题。
+
+
+
+---
+url: /parenting-agent/guide/safety.md
+---
+
+> For AI agents: the complete documentation index is available at /parenting-agent/llms.txt, the full documentation bundle is available at /parenting-agent/llms-full.txt.
+
+# 安全边界
+
+关于宝宝的健康，我们宁可多提醒一句。小芽内置了**双保险**安全机制。
+
+## 1. 红旗信号分诊（最高优先级）
+
+红旗规则写在 Agent 指令的最顶部，优先级高于输出模板。以下情况会被直接建议就医：
+
+- 3 月龄内发烧
+- 抽搐、惊厥
+- 呼吸困难、口唇发青
+- 嗜睡难以唤醒、哭声微弱
+- ……以及各数据条目中列出的其他红旗信号
+
+## 2. 数据层内嵌红旗
+
+每一条里程碑与护理指南都携带 `redFlags` 字段，随工具结果一同返回，确保模型在回答具体问题时也不会漏掉危险信号。
+
+## 3. 不做医学诊断
+
+- 只提供科普知识与日常护理建议
+- 不判断"是什么病"，不推荐处方药物剂量
+- 每次回答末尾附带免责声明
+
+:::danger 紧急情况
+如遇紧急情况，请立即拨打 **120** 或前往最近的医院急诊，不要等待任何线上回答。
+:::
+
+
+
+---
+url: /parenting-agent/guide/faq.md
+---
+
+> For AI agents: the complete documentation index is available at /parenting-agent/llms.txt, the full documentation bundle is available at /parenting-agent/llms-full.txt.
+
+# 常见问题
+
+## 小芽的回答可以替代医生吗？
+
+不可以。小芽是育儿**科普**助手，帮你理解"这正常吗、可以怎么做、什么时候该去医院"。具体诊断与治疗请咨询儿科医生。
+
+## 为什么有时候它说"暂无精选数据"？
+
+这是刻意的设计。当结构化数据和本地 Wiki 都没有覆盖你的问题时，小芽宁可坦白，也不让模型凭空编造。你可以参考 [扩充 Wiki 知识](/parenting-agent/guide/wiki.md) 补充内容。
+
+## 支持多大的宝宝？
+
+0-8 岁（0-96 个月）。
+
+## 可以换成其他模型吗？
+
+可以，只要服务兼容 OpenAI Chat Completions 协议。修改 `.env` 中的 `OPENAI_BASE_URL` 与 `MODEL_NAME` 即可。
+
+## 聊天记录存在哪里？会上传吗？
+
+会话保存在本地 `.sessions/<id>.jsonl`。除了发送给你配置的模型服务外，不会上传到其他地方；trace 上报也已默认关闭。
+
+## 如何清空宝宝的信息？
+
+- 终端聊天：输入 `/clear`
+- HTTP：`DELETE /api/agent/chat/:sessionId`
+- 或直接删除 `.sessions/` 下对应的文件
+
+
+
+---
+url: /parenting-agent/playground.md
+---
+
+> For AI agents: the complete documentation index is available at /parenting-agent/llms.txt, the full documentation bundle is available at /parenting-agent/llms-full.txt.
+
+
+
+
+---
+url: /parenting-agent/index.md
+---
+
+> For AI agents: the complete documentation index is available at /parenting-agent/llms.txt, the full documentation bundle is available at /parenting-agent/llms-full.txt.
+
+# 小芽育儿助手
+
+陪宝宝慢慢长大的 AI 育儿伙伴
+
+> 专为 0-8 岁宝宝的爸爸妈妈准备。夜里宝宝发烧、不肯睡觉、说话晚一点……别慌，我们一起有依据地看一看 🌱
+
+[开始使用 →](/guide/getting-started) | [在线试一试](/playground) | [GitHub](https://github.com/BenTuTu/parenting-agent)
+
+## Features
+
+- 🍼 **按月龄说话**: 输入宝宝的出生日期，自动换算月龄，给出这个阶段最该关心的事，不再被"别人家孩子"带着焦虑。
+- 🧸 **发育里程碑**: 覆盖 0-96 个月 10 个阶段，从大运动、精细动作、语言到社交情绪，看看宝宝正在学会什么。
+- 🌙 **六大护理指南**: 睡眠、喂养、发烧护理、如厕训练、入园焦虑、屏幕时间——日常最常遇到的难题，都有温柔又靠谱的建议。
+- 📖 **精选育儿知识库**: 回答来自精心整理的本地 Wiki，会注明出处；查不到就坦白说"暂无精选数据"，绝不编造。
+- 🚑 **红旗信号优先**: 3 月龄内发烧、抽搐、呼吸困难……遇到危险信号第一时间提醒就医，安全永远排在最前面。
+- 💛 **会追问，也会记得**: 信息不够时会像朋友一样轻声问一句"宝宝现在多大啦？"；多轮对话自动记住宝宝的情况。
+
+

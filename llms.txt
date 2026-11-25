@@ -1,0 +1,20 @@
+# 小芽育儿助手
+
+> 陪伴 0-8 岁宝宝成长的 AI 育儿科普伙伴 · Parenting Agent
+
+## 使用文档
+
+- [项目介绍](/parenting-agent/guide/introduction.md): 小芽育儿助手（Parenting Agent）是一个面向 0-8 岁宝宝家长的育儿知识科普与咨询 Agent。它基于 @openai/agents SDK 构建，可接入任意 OpenAI 兼容的模型服务。 写给每一位第一次当爸爸妈妈的你：育儿路上没有标准答案，但可以有靠谱的参考。🌱
+- [快速开始](/parenting-agent/guide/getting-started.md): 只要三步，就能和小芽聊上天 🍼
+- [环境配置](/parenting-agent/guide/configuration.md): 所有配置通过项目根目录的 .env 文件读取（.env 已被 git 忽略，请勿提交密钥）。
+- [交互式聊天](/parenting-agent/guide/chat.md): pnpm chat 会打开一个基于 Ink 的终端聊天界面，适合日常使用。
+- [命令行](/parenting-agent/guide/cli.md): 适合快速提一个问题，或在脚本中调用。回答以流式方式输出。
+- [HTTP API](/parenting-agent/guide/http-api.md): 启动服务：
+- [工具与知识来源](/parenting-agent/guide/tools.md): 小芽的所有事实性知识都来自确定性工具——相同输入永远得到相同输出，不联网、可单测。
+- [扩充 Wiki 知识](/parenting-agent/guide/wiki.md): 想让小芽懂得更多？在 src/data/wiki/ 下新建一个 Markdown 文件即可，重启进程后生效。
+- [安全边界](/parenting-agent/guide/safety.md): 关于宝宝的健康，我们宁可多提醒一句。小芽内置了双保险安全机制。
+- [常见问题](/parenting-agent/guide/faq.md)
+
+## Playground
+
+- [Playground](/parenting-agent/playground.md)
